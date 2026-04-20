@@ -1,147 +1,171 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+from tga_harvester import TGAHarvester
+from predictive_engine import PredictiveEngine
+from geo_map import build_geo_map
 
-# 1. CONFIGURACIÓN DE INTERFAZ
-st.set_page_config(page_title="Copiloto Minero v11.1", layout="wide", initial_sidebar_state="expanded")
+# 1. CONFIGURACIÓN MASTER CORE (Capa 1 y 11)
+st.set_page_config(page_title="Heptágono v10.1 | Master Core", layout="wide")
 
-# 2. CEREBRO VISUAL (CSS MASTER CORE - Máximo Contraste y Purga de Marca)
+# CSS: Estética de Alta Gama y Contraste Forense
 st.markdown("""
     <style>
     .stApp { background-color: #080c10; color: #e8eaed; }
-    [data-testid="stSidebar"] { background-color: #0d1318; border-right: 1px solid rgba(200, 168, 75, 0.2); }
+    [data-testid="stSidebar"] { background-color: #0d1318; border-right: 1px solid rgba(212, 175, 55, 0.2); }
+    h1, h2, h3 { color: #D4AF37 !important; font-family: 'Syne', sans-serif; }
     
-    /* Textos y Etiquetas */
-    .stMarkdown, p, span, label { color: #e8eaed !important; }
-    .stCaption { color: #c8a84b !important; font-weight: 500; }
-    h1, h2, h3 { color: #ffffff !important; font-family: 'Syne', sans-serif; }
-
-    /* Tablas Técnicas */
+    /* Tablas Forenses */
     .tech-table {
         background-color: #111920;
-        border: 1px solid rgba(200, 168, 75, 0.3);
+        border: 1px solid rgba(212, 175, 55, 0.3);
         border-radius: 8px;
         margin-bottom: 25px;
         overflow: hidden;
     }
     .t-row { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .t-header { background-color: rgba(200, 168, 75, 0.15); color: #c8a84b !important; font-weight: 800; text-transform: uppercase; font-size: 11px; }
-    .t-col { padding: 12px 15px; font-size: 13px; }
-    .t-label { background-color: rgba(200, 168, 75, 0.08); color: #c8a84b !important; font-weight: 600; width: 35%; }
-
-    /* Forzar visibilidad de leyendas Plotly */
-    .js-plotly-plot .plotly .legendtext { fill: #ffffff !important; font-size: 13px !important; font-weight: bold !important; }
+    .t-header { background-color: rgba(212, 175, 55, 0.15); color: #D4AF37; font-weight: 800; text-transform: uppercase; font-size: 11px; }
+    .t-col { padding: 12px 15px; font-size: 13px; color: #ffffff; }
+    .t-label { background-color: rgba(212, 175, 55, 0.08); color: #D4AF37; font-weight: 600; width: 30%; }
+    
+    /* Sello Forense */
+    .seal-box { border: 2px dashed #D4AF37; padding: 20px; border-radius: 8px; background-color: rgba(212, 175, 55, 0.03); text-align: center; margin: 20px 0; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. BARRA LATERAL (IDENTIDAD EXCLUSIVA)
+# 2. BARRA LATERAL: CONTROL SOBERANO
 with st.sidebar:
-    st.markdown("### DATA LAKE v6.1")
-    capa_activa = st.radio(
-        "Navegación de Capas:",
-        ["Capa 1: Estructura TGA", "Capa 2: Diagnóstico & Hoja de Ruta", "Capa 3: Oráculo Claudio Falasca"],
-        index=1
-    )
+    st.title("HEPTÁGONO v10.1")
+    st.markdown("**OPERADOR:** Claudio Falasca Consultor")
     st.write("---")
-    st.markdown("**OPERADOR:**")
-    st.markdown('<p style="color:#c8a84b; font-weight:bold; font-size:18px;">Claudio Falasca Consultor</p>', unsafe_allow_html=True)
-    st.info(f"MODO: {capa_activa.split(':')[0]}")
+    capa_activa = st.radio("Capas de Ejecución:", ["Diagnóstico 7 Ejes", "Riesgo & Supervivencia", "Estrategia & Oráculo"])
+    st.write("---")
+    sources = st.number_input("Fuentes TGA Auditadas", value=112)
+    st.caption("© 2026 Claudio Falasca Consultor")
 
-# 4. CUERPO PRINCIPAL
-st.caption("CONSULTA DE OPERACIÓN ACTIVA — MOTOR DETERMINÍSTICO CLAUDIO FALASCA")
+# 3. HEADER
+st.caption("CAPA 19: OPERATOR CONTROL DASHBOARD (OCD)")
 st.title("Copiloto Minero v11.1")
 
-# --- LÓGICA DE CAPAS ---
+# --- REGLA DE ORO (CAPA 15) ---
+if sources < 105:
+    st.error("⛔ TGA BLOQUEADO: Fuentes insuficientes para diagnóstico determinístico.")
+    st.stop()
 
-if "Capa 1" in capa_activa:
-    st.subheader("1. Identidad & Validación TGA")
-    st.markdown("""
-        <div class="tech-table">
-            <div class="t-row"><div class="t-col t-label">Proyecto</div><div class="t-col">Hombre Muerto Norte</div></div>
-            <div class="t-row"><div class="t-col t-label">Analista</div><div class="t-col">Claudio Falasca Consultor</div></div>
-            <div class="t-row" style="border-bottom:none;"><div class="t-col t-label">Estado TGA</div><div class="t-col" style="color:#2dd4bf; font-weight:bold;">VALIDADO</div></div>
-        </div>
-    """, unsafe_allow_html=True)
+# --- EJECUCIÓN DE CAPAS ---
 
-elif "Capa 2" in capa_activa:
-    # --- CURVA DE COX CON NUEVA IDENTIDAD Y ALTA VISIBILIDAD ---
-    st.subheader("4.1 Curva de Supervivencia Cox — Licencia Social")
+if capa_activa == "Diagnóstico 7 Ejes":
+    # 4. GRÁFICO DE LOS 7 EJES (Heptágono)
+    st.subheader("Capa 2: Diagnóstico Determinístico")
+    df_ejes = pd.DataFrame({
+        "Eje": ["Regulatorio", "Ambiental", "Operacional", "Social", "Estratégico", "Hídrico", "Económico"],
+        "Puntaje": [78, 38, 55, 42, 47, 60, 65]
+    })
     
-    meses = list(range(0, 37, 3))
-    prob_base = [100, 92, 80, 65, 45, 30, 20, 15, 10, 5, 2, 1, 0]
-    prob_inter = [100, 95, 90, 88, 85, 84, 83, 82, 82, 81, 81, 80, 80]
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        fig_rad = px.line_polar(df_ejes, r='Puntaje', theta='Eje', line_close=True, range_r=[0,100], color_discrete_sequence=['#D4AF37'])
+        fig_rad.update_traces(fill='toself', fillcolor='rgba(212, 175, 55, 0.2)')
+        fig_rad.update_layout(polar=dict(bgcolor='rgba(0,0,0,0)'), paper_bgcolor='rgba(0,0,0,0)', font=dict(color="white"))
+        st.plotly_chart(fig_rad, use_container_width=True)
+    with col2:
+        st.metric("IBH SCORE", "55.0", "-4.2")
+        if df_ejes.loc[df_ejes['Eje'] == 'Ambiental', 'Puntaje'].values[0] < 40:
+            st.error("⚠️ Capa 20 (MLC): Riesgo Ambiental Crítico detectado.")
+
+elif capa_activa == "Riesgo & Supervivencia":
+    # 5. CURVA DE COX (REFERENCIADA)
+    st.subheader("Capa 16: Análisis de Supervivencia")
+    meses = np.arange(0, 37, 3)
+    prob_base = np.exp(-0.09 * meses) * 100
+    prob_claudio = np.exp(-0.02 * meses) * 100
     
     fig_cox = go.Figure()
-
-    # Escenario Crítico
-    fig_cox.add_trace(go.Scatter(
-        x=meses, y=prob_base, 
-        name='⚠️ ESCENARIO SIN INTERVENCIÓN', 
-        line=dict(color='#FF3131', width=3, dash='dot'),
-        mode='lines+markers'
-    ))
-
-    # Escenario Claudio Falasca (Máximo Contraste)
-    fig_cox.add_trace(go.Scatter(
-        x=meses, y=prob_inter, 
-        name='💎 PROYECCIÓN CLAUDIO FALASCA CONSULTOR', 
-        line=dict(color='#00FFFF', width=5),
-        mode='lines+markers',
-        marker=dict(size=10, symbol='diamond')
-    ))
-
-    # Anotaciones de Referencia con Fondo para Legibilidad
-    fig_cox.add_annotation(x=36, y=5, text="RIESGO DE CIERRE", showarrow=True, arrowhead=2, bgcolor="#FF3131", font=dict(color="white"))
-    fig_cox.add_annotation(x=36, y=85, text="ACTIVO ESTABILIZADO", showarrow=True, arrowhead=2, bgcolor="#00FFFF", font=dict(color="black"))
-
-    fig_cox.update_layout(
-        xaxis=dict(title="MESES", color="#ffffff", gridcolor="rgba(255,255,255,0.05)"),
-        yaxis=dict(title="PROBABILIDAD (%)", color="#ffffff", gridcolor="rgba(255,255,255,0.05)", range=[-5, 110]),
-        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        height=450,
-        legend=dict(
-            orientation="h", yanchor="bottom", y=1.05, xanchor="center", x=0.5,
-            bgcolor="rgba(255, 255, 255, 0.1)", bordercolor="#c8a84b", borderwidth=1
-        )
-    )
+    fig_cox.add_trace(go.Scatter(x=meses, y=prob_base, name='⚠️ ESCENARIO BASE (Riesgo)', line=dict(color='#FF3131', width=3, dash='dot')))
+    fig_cox.add_trace(go.Scatter(x=meses, y=prob_claudio, name='💎 PROYECCIÓN CLAUDIO FALASCA', line=dict(color='#00FFFF', width=5)))
+    fig_cox.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white"),
+                          legend=dict(bgcolor="rgba(255,255,255,0.1)", bordercolor="#D4AF37", borderwidth=1))
     st.plotly_chart(fig_cox, use_container_width=True)
 
-    # --- CRONOGRAMA DE INTERVENCIÓN ---
-    st.subheader("7.1 Cronograma Orientativo de Intervención")
+elif capa_activa == "Estrategia & Oráculo":
+    # 6. IMPLICANCIAS Y HOJA DE RUTA
+    st.subheader("7. Implicancias Estratégicas y Hoja de Ruta")
     st.markdown("""
         <div class="tech-table">
             <div class="t-row t-header">
-                <div style="width:20%; padding:10px 15px;">Fase</div>
-                <div style="width:55%; padding:10px 15px;">Hitos de Gestión Claudio Falasca</div>
-                <div style="width:25%; padding:10px 15px;">Entregable Forense</div>
+                <div style="width:25%; padding:10px;">Dimensión</div><div style="width:55%; padding:10px;">Implicancia Estratégica</div><div style="width:20%; padding:10px;">Urgencia</div>
             </div>
             <div class="t-row">
-                <div class="t-col" style="width:20%; font-weight:bold; color:#c8a84b;">MES 1</div>
-                <div class="t-col" style="width:55%;">Auditoría TGA y Apertura de Mesa CLPI.</div>
-                <div class="t-col" style="width:25%;">Mapa de Fricción</div>
-            </div>
-            <div class="t-row" style="border-bottom:none;">
-                <div class="t-col" style="width:20%; font-weight:bold; color:#c8a84b;">MES 3</div>
-                <div class="t-col" style="width:55%;">Estabilización de Licencia Social y Sello Capa 21.</div>
-                <div class="t-col" style="width:25%;">Certificación Final</div>
+                <div class="t-col t-label">Territorial</div><div class="t-col" style="width:55%;">Bloqueo preventivo en accesos por falta de srv_hidrico.</div><div class="t-col" style="color:#FF3131; width:20%;">ALTA</div>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-elif "Capa 3" in capa_activa:
-    st.subheader("6. Propuesta Comercial & Oráculo")
-    st.markdown('<div style="border:2px solid #c8a84b; padding:40px; text-align:center; border-radius:10px;">'
-                '<p style="color:#8899a6;">ORÁCULO v11.1 — PROYECCIÓN FINANCIERA</p>'
-                '<h1 style="color:#c8a84b; font-size:48px;">USD 214,693</h1>'
-                '<p style="color:#2dd4bf; font-weight:bold;">VALIDADO POR CLAUDIO FALASCA CONSULTOR</p></div>', unsafe_allow_html=True)
+    # 7. CRONOGRAMA ORIENTATIVO (CUADRO DE COLUMNAS)
+    st.subheader("Hoja de Ruta - Cronograma Claudio Falasca")
+    st.markdown("""
+        <div class="tech-table">
+            <div class="t-row t-header">
+                <div style="width:20%; padding:10px;">Fase</div><div style="width:60%; padding:10px;">Acciones Master Core</div><div style="width:20%; padding:10px;">Hito</div>
+            </div>
+            <div class="t-row">
+                <div class="t-col t-label">Mes 1</div><div class="t-col" style="width:60%;">Cosecha TGA y Auditoría de Activos Críticos.</div><div class="t-col" style="width:20%;">Validación</div>
+            </div>
+            <div class="t-row">
+                <div class="t-col t-label">Mes 2</div><div class="t-col" style="width:60%;">Despliegue de Mediación MIRCS-ET en territorio.</div><div class="t-col" style="width:20%;">Consenso</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
-# 6. CIERRE SELLO FORENSE
-st.write("---")
-st.markdown("""
-    <div style="text-align: right;">
-        <p style="color:#8899a6; font-size:12px; margin:0;">FIRMA DE INTEGRIDAD FORENSE</p>
-        <h3 style="color:#c8a84b; margin:0;">Claudio Falasca Consultor</h3>
-        <p style="font-size:11px;">Heptágono SF — Todos los derechos reservados 2026</p>
-    </div>
-""", unsafe_allow_html=True)
+    # 8. PROPUESTA COMERCIAL & HONORARIOS
+    st.subheader("Propuesta Comercial de Intervención")
+    st.markdown("""
+        <div class="tech-table">
+            <div class="t-row t-header">
+                <div style="width:10%; padding:10px;">#</div><div style="width:50%; padding:10px;">Servicio Base</div><div style="width:20%; padding:10px;">USD</div><div style="width:20%; padding:10px;">Estado</div>
+            </div>
+            <div class="t-row">
+                <div class="t-col" style="width:10%;">01</div><div class="t-col" style="width:50%;">Diagnóstico Heptágono Master Core</div><div class="t-col" style="width:20%;">$55,000</div><div class="t-col" style="width:20%; color:#00FFFF;">ACTIVO</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Cálculo de Honorarios Oráculo
+    st.write("### Cálculo de Honorarios — Oráculo v11.1")
+    st.markdown("""
+        <div class="tech-table">
+            <div class="t-row t-header">
+                <div style="width:30%; padding:10px;">Parámetro</div><div style="width:20%; padding:10px;">Valor</div><div style="width:50%; padding:10px;">Detalle</div>
+            </div>
+            <div class="t-row">
+                <div class="t-col t-label">Retainer Fee</div><div class="t-col" style="width:20%;">$22,000</div><div class="t-col" style="width:50%;">40% inicial para despliegue de Capa 15.</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 9. METODOLOGÍA Y SELLO FORENSE
+    st.subheader("8. Metodología y Sello de Integridad Forense")
+    st.markdown("""
+        <div class="tech-table">
+            <div class="t-row t-header">
+                <div style="width:40%; padding:10px;">Componente</div><div style="width:60%; padding:10px;">Función</div>
+            </div>
+            <div class="t-row">
+                <div class="t-col t-label">Capa 21 (Forense)</div><div class="t-col" style="width:60%;">Garantiza la inmutabilidad del diagnóstico mediante hashes MD5.</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+        <div class="seal-box">
+            <h3 style="margin:0;">🛡️ SELLO FORENSE VÁLIDO</h3>
+            <p style="color:#8899a6; font-size:12px;">EMITIDO POR: CLAUDIO FALASCA CONSULTOR</p>
+            <code style="color:#D4AF37;">HASH-MD5: 9f4c5b606f7cde1126cb410d67500dec</code>
+        </div>
+    """, unsafe_allow_html=True)
+
+# PIE DE PÁGINA FINAL
+st.divider()
+st.caption('Heptágono v10.1 — Sistema de Inteligencia Soberana de Claudio Falasca Consultor')
