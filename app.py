@@ -85,35 +85,4 @@ with col_left:
     
     fig = px.line_polar(
         df, r='Puntaje', theta='Eje', line_close=True,
-        range_r=[0, 100], color_discrete_sequence=['#c8a84b'], text='Puntaje'
-    )
-    fig.update_traces(fill='toself', fillcolor='rgba(200, 168, 75, 0.15)', textposition='top center')
-    fig.update_layout(
-        polar=dict(
-            bgcolor='rgba(0,0,0,0)',
-            radialaxis=dict(gridcolor='rgba(255,255,255,0.1)', showticklabels=False),
-            angularaxis=dict(gridcolor='rgba(255,255,255,0.1)', tickfont=dict(color="#ffffff", size=11))
-        ),
-        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        margin=dict(t=30, b=30, l=30, r=30)
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-with col_right:
-    st.markdown(f"""
-        <div class="main-score-box">
-            <div class="kpi-label">IBH Score Promedio</div>
-            <div class="main-score-value">61.6</div>
-            <div style="color:#2dd4bf; font-size:14px;">▲ +19.72 vs v6.0</div>
-        </div>
-    """, unsafe_allow_html=True)
-    
-    st.write("### Insights del Motor")
-    st.warning("**Eje Estratégico Crítico:** Puntuación por debajo de 50.")
-    st.info("**Oportunidad Ambiental:** Coherencia alta en Capa 2.")
-    
-    with st.expander("Ver Tabla de Datos"):
-        st.dataframe(df.set_index("Eje"), use_container_width=True)
-
-st.write("---")
-st.caption("Sello Forense Digital - Propiedad de Susana Figueroa Consulting")
+        range_r=[0, 100], color_discrete_sequence=['
