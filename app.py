@@ -138,4 +138,10 @@ elif "Capa 3" in capa_activa:
 
 # 6. CIERRE SELLO FORENSE
 st.write("---")
-st.
+st.markdown("""
+    <div style="text-align: right;">
+        <p style="color:#8899a6; font-size:12px; margin:0;">FIRMA DE INTEGRIDAD FORENSE</p>
+        <h3 style="color:#c8a84b; margin:0;">Claudio Falasca Consultor</h3>
+        <p style="font-size:11px;">Heptágono SF — Todos los derechos reservados 2026</p>
+    </div>
+""", unsafe_allow_html=True)
