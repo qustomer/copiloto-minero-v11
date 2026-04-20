@@ -1,111 +1,84 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 
-# 1. CONFIGURACIÓN DE INTERFAZ
-st.set_page_config(page_title="Copiloto Minero v11.1", layout="wide", initial_sidebar_state="expanded")
+# 1. CONFIGURACIÓN
+st.set_page_config(page_title="Copiloto Minero v11.1", layout="wide")
 
-# 2. CEREBRO VISUAL (Estilos Master Core)
+# 2. CSS MASTER CORE (Optimización de Contraste)
 st.markdown("""
     <style>
     .stApp { background-color: #080c10; color: #e8eaed; }
-    [data-testid="stSidebar"] { background-color: #0d1318; border-right: 1px solid rgba(200, 168, 75, 0.2); }
-    .stMarkdown, p, span, label { color: #e8eaed !important; }
-    .stCaption { color: #c8a84b !important; font-weight: 500; }
-    h1, h2, h3 { color: #ffffff !important; font-family: 'Syne', sans-serif; }
-
-    /* Tablas Técnicas */
-    .tech-table {
-        background-color: #111920;
-        border: 1px solid rgba(200, 168, 75, 0.3);
-        border-radius: 8px;
-        margin-bottom: 25px;
-        overflow: hidden;
-    }
-    .t-row { display: flex; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .t-header { background-color: rgba(200, 168, 75, 0.15); color: #c8a84b !important; font-weight: 800; text-transform: uppercase; font-size: 11px; }
-    .t-col { padding: 12px 15px; font-size: 13px; }
+    /* Forzar visibilidad de textos de Plotly que Streamlit a veces opaca */
+    .js-plotly-plot .plotly .legendtext { fill: #ffffff !important; font-size: 14px !important; font-weight: bold !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. NAVEGACIÓN LATERAL
-with st.sidebar:
-    st.markdown("### DATA LAKE v6.1")
-    capa_activa = st.radio("Capas de Análisis:", ["Capa 1: Estructura TGA", "Capa 2: Diagnóstico & Hoja de Ruta", "Capa 3: Oráculo Comercial"], index=1)
-    st.write("---")
-    st.markdown('<p style="color:#c8a84b; font-weight:bold;">Claudio Falasca Consultor</p>', unsafe_allow_html=True)
+st.title("Consola de Mando: Análisis de Supervivencia")
 
-# 4. CUERPO PRINCIPAL
-st.caption("CONSULTA DE OPERACIÓN ACTIVA")
-st.title("Copiloto Minero v11.1")
+# --- GRÁFICO DE COX CON ALTA VISIBILIDAD ---
+st.subheader("Curva de Supervivencia Cox — Referencias de Alto Contraste")
 
-if "Capa 2" in capa_activa:
-    # --- 1. CURVA DE COX CON REFERENCIAS ---
-    st.subheader("4.1 Curva de Supervivencia Cox — Licencia Social (Referenciada)")
-    
-    meses = list(range(0, 37, 3))
-    prob_base = [100, 92, 80, 65, 45, 30, 20, 15, 10, 5, 2, 1, 0]
-    prob_inter = [100, 95, 90, 88, 85, 84, 83, 82, 82, 81, 81, 80, 80]
-    
-    fig_cox = go.Figure()
+meses = list(range(0, 37, 3))
+prob_base = [100, 92, 80, 65, 45, 30, 20, 15, 10, 5, 2, 1, 0]
+prob_inter = [100, 95, 90, 88, 85, 84, 83, 82, 82, 81, 81, 80, 80]
 
-    # Línea Roja: Sin Intervención
-    fig_cox.add_trace(go.Scatter(
-        x=meses, y=prob_base, 
-        name='ESCENARIO BASE: Sin Intervención (Riesgo de Cierre)', 
-        line=dict(color='#ff4b4b', width=3, dash='dash'),
-        mode='lines+markers'
-    ))
+fig_cox = go.Figure()
 
-    # Línea Celeste/Aqua: Con Intervención
-    fig_cox.add_trace(go.Scatter(
-        x=meses, y=prob_inter, 
-        name='PROYECCIÓN SF: Con Intervención Heptágono (Estabilización)', 
-        line=dict(color='#2dd4bf', width=4),
-        mode='lines+markers'
-    ))
-    
-    fig_cox.update_layout(
-        xaxis=dict(title="Meses de Operación", gridcolor="rgba(255,255,255,0.05)"),
-        yaxis=dict(title="Probabilidad de Continuidad (%)", gridcolor="rgba(255,255,255,0.05)", range=[0, 105]),
-        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="#ffffff"), height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=12))
+# ESCENARIO CRÍTICO (Rojo Brillante)
+fig_cox.add_trace(go.Scatter(
+    x=meses, y=prob_base, 
+    name='⚠️ ESCENARIO SIN INTERVENCIÓN', 
+    line=dict(color='#FF3131', width=4, dash='dot'),
+    mode='lines+markers',
+    marker=dict(size=8)
+))
+
+# ESCENARIO SF (Celeste Neón)
+fig_cox.add_trace(go.Scatter(
+    x=meses, y=prob_inter, 
+    name='💎 PROYECCIÓN SUSANA FIGUEROA', 
+    line=dict(color='#00FFFF', width=5),
+    mode='lines+markers',
+    marker=dict(size=10, symbol='diamond')
+))
+
+# ANOTACIONES DE REFERENCIA AL FINAL DE LA CURVA (Para lectura inmediata)
+fig_cox.add_annotation(x=36, y=0, text="FALLO TOTAL", showarrow=True, arrowhead=2, bgcolor="#FF3131", font=dict(color="white"))
+fig_cox.add_annotation(x=36, y=80, text="ÉXITO SF", showarrow=True, arrowhead=2, bgcolor="#00FFFF", font=dict(color="black"))
+
+fig_cox.update_layout(
+    xaxis=dict(
+        title="TIEMPO (MESES)", 
+        color="#c8a84b", 
+        gridcolor="rgba(200, 168, 75, 0.1)",
+        tickfont=dict(color="#ffffff", size=12)
+    ),
+    yaxis=dict(
+        title="PROBABILIDAD DE CONTINUIDAD (%)", 
+        color="#c8a84b", 
+        gridcolor="rgba(200, 168, 75, 0.1)",
+        tickfont=dict(color="#ffffff", size=12)
+    ),
+    paper_bgcolor='rgba(0,0,0,0)', 
+    plot_bgcolor='rgba(0,0,0,0)',
+    height=500,
+    # Leyenda con fondo para máxima visibilidad
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.1,
+        xanchor="center",
+        x=0.5,
+        bgcolor="rgba(255, 255, 255, 0.1)",
+        bordercolor="#c8a84b",
+        borderwidth=1,
+        font=dict(color="#ffffff", size=14)
     )
-    st.plotly_chart(fig_cox, use_container_width=True)
+)
 
-    # --- 2. CRONOGRAMA DE INTERVENCIÓN ---
-    st.subheader("7.1 Cronograma Orientativo de Intervención")
-    st.markdown("""
-        <div class="tech-table">
-            <div class="t-row t-header">
-                <div style="width:15%; padding:10px 15px;">Fase</div>
-                <div style="width:20%; padding:10px 15px;">Periodo</div>
-                <div style="width:40%; padding:10px 15px;">Hitos Clave</div>
-                <div style="width:25%; padding:10px 15px;">Entregable Forense</div>
-            </div>
-            <div class="t-row">
-                <div class="t-col" style="width:15%; font-weight:bold; color:#c8a84b;">FASE I: Seteo</div>
-                <div class="t-col" style="width:20%;">Días 1 a 30</div>
-                <div class="t-col" style="width:40%;">Auditoría TGA, Apertura Mesa Diálogo, Mapeo CLPI.</div>
-                <div class="t-col" style="width:25%;">Dashboard Identidad</div>
-            </div>
-            <div class="t-row">
-                <div class="t-col" style="width:15%; font-weight:bold; color:#c8a84b;">FASE II: Acción</div>
-                <div class="t-col" style="width:20%;">Días 31 a 60</div>
-                <div class="t-col" style="width:40%;">Implementación MIRCS-ET, Consenso de Territorio.</div>
-                <div class="t-col" style="width:25%;">Protocolo de Mitigación</div>
-            </div>
-            <div class="t-row" style="border-bottom:none;">
-                <div class="t-col" style="width:15%; font-weight:bold; color:#c8a84b;">FASE III: Cierre</div>
-                <div class="t-col" style="width:20%;">Días 61 a 90</div>
-                <div class="t-col" style="width:40%;">Certificación IBH > 75, Transferencia de activos.</div>
-                <div class="t-col" style="width:25%;">Sello Forense Capa 21</div>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+st.plotly_chart(fig_cox, use_container_width=True)
 
 # PIE DE PÁGINA
 st.write("---")
-st.caption('Sello Forense Digital - Propiedad de "Claudio Falasca Consultor"')
+st.caption('Sello Forense Digital - Contraste Validado para Operación Nocturna/Oscura')
