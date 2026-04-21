@@ -5,162 +5,156 @@ import plotly.express as px
 import plotly.graph_objects as go
 import hashlib
 import json
-import base64
 
-# --- 1. IDENTIDAD SOBERANA Y CONFIGURACIÓN ---
+# --- 1. IDENTIDAD Y GOBERNANZA (CAPAS 1, 10, 11) ---
 OWNER = "Claudio Falasca Consultor"
-VERSION = "v11.2 Master Core"
+VERSION = "v11.2.9 Master Core"
 
-st.set_page_config(page_title=f"Heptágono {VERSION}", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title=f"Terminal {OWNER}", layout="wide", initial_sidebar_state="expanded")
 
-# --- 2. CAPA 14 Y 4: MOTOR DE DESPACHO Y RESET ---
-class DespachoPro:
-    @staticmethod
-    def sanitizar_perseo(data):
-        """Capa 14: Limpieza de PI para visualización de cliente"""
-        d = data.copy()
-        d['proyecto'] = "ACTIVO_BAJO_PROTOCOLO_PERSEO"
-        d['ubicacion'] = "COORDENADAS_REDACTADAS_BY_FALASCA"
-        return d
+# --- 2. MOTOR DE CAPA 14 (PERSEO & PURGA) ---
+def protocolo_purga_total():
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
 
-    @staticmethod
-    def reset_atómico():
-        """Capa 14: Purga absoluta de memoria de sesión"""
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.rerun()
-
-# --- 3. ESTILOS DE ALTA DENSIDAD (Fisonomía Huarpe) ---
+# --- 3. ESTÉTICA HUARPE_V6 (CSS DE ALTA DENSIDAD) ---
 st.markdown(f"""
     <style>
-    .stApp {{ background-color: #080c10; color: #e8eaed; }}
-    [data-testid="stSidebar"] {{ background-color: #0d1318; border-right: 1px solid #D4AF37; }}
-    h1, h2, h3 {{ color: #D4AF37 !important; font-family: 'Syne', sans-serif; }}
-    .stButton>button {{ background-color: #111920; border: 1px solid #D4AF37; color: #D4AF37; width: 100%; border-radius: 0; }}
-    .stButton>button:hover {{ background-color: #D4AF37; color: #080c10; }}
-    .report-box {{ border: 1px solid rgba(212, 175, 55, 0.3); padding: 15px; background: #0d1318; }}
+    .stApp {{ background-color: #080c10; color: #e8eaed; font-family: 'IBM Plex Sans', sans-serif; }}
+    [data-testid="stSidebar"] {{ background-color: #0d1318; border-right: 2px solid #D4AF37; }}
+    h1, h2, h3 {{ color: #D4AF37 !important; font-family: 'Syne', sans-serif; text-transform: uppercase; }}
+    .stTabs [data-baseweb="tab-list"] {{ gap: 10px; }}
+    .stTabs [data-baseweb="tab"] {{ background-color: #111920; border: 1px solid rgba(212,175,55,0.2); color: #8899a6; padding: 10px 20px; }}
+    .stTabs [aria-selected="true"] {{ border: 1px solid #D4AF37 !important; color: #D4AF37 !important; }}
+    .forense-card {{ border: 1px solid rgba(212,175,55,0.3); background: #0d1318; padding: 15px; border-radius: 4px; }}
+    .status-cyan {{ color: #00FFFF; font-family: monospace; font-weight: bold; }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. GOBERNANZA (Sidebar) ---
+# --- 4. GATEKEEPER Y SEGURIDAD (CAPA 15, 20) ---
 with st.sidebar:
-    st.image("https://img.icons8.com/ios-filled/100/D4AF37/security-shield.png", width=80)
-    st.title("MASTER CORE")
-    st.subheader(OWNER)
+    st.markdown(f"### {OWNER}")
+    st.caption(f"MODO: OPERADOR SOBERANO")
     st.write("---")
-    sources = st.number_input("Fuentes TGA Auditadas", value=112)
-    st.write(f"Estado TGA: {'✅ VALIDADO' if sources >= 105 else '❌ BLOQUEADO'}")
+    sources = st.number_input("Fuentes TGA Auditadas (C15)", value=112)
+    tga_ok = sources >= 105
+    mlc_coherence = "VALIDADA" if tga_ok else "DISRUPCIÓN" # Capa 20
+    
+    st.write(f"**TGA Status:** {'✅ OK' if tga_ok else '❌ BLOQUEADO'}")
+    st.write(f"**MLC Coherence (C20):** {mlc_coherence}")
     
     st.write("---")
-    if st.button("🔥 RESET ATÓMICO (Capa 14)"):
-        DespachoPro.reset_atómico()
-    st.caption(f"© 2026 {OWNER}")
+    if st.button("🔥 RESET ATÓMICO (C14)"):
+        protocolo_purga_total()
+    st.caption(f"Identidad Unificada: {OWNER}")
 
-# --- 5. LÓGICA DE VALIDACIÓN (Gatekeeper Capa 15) ---
-if sources < 105:
-    st.error("⛔ SISTEMA BLOQUEADO: No se cumple la Regla de Oro (105 fuentes mínimas).")
+if not tga_ok:
+    st.error("⛔ SISTEMA BLOQUEADO: Capa 15 no validada (Fuentes < 105).")
     st.stop()
 
-# --- 6. DASHBOARD OCD (Capa 19 - Estructura de 21 Capas) ---
-st.title("🛡️ Copiloto Minero — Terminal Estratégica")
+# --- 5. ESTRUCTURA DE 21 CAPAS (DASHBOARD OCD) ---
+st.title("🛡️ Copiloto Minero — Terminal Master Core")
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "Inteligencia Predictiva", 
-    "Blindaje Territorial", 
-    "Transparencia TGA", 
-    "Oráculo & Estrategia", 
-    "Despacho & Perseo"
+tabs = st.tabs([
+    "I. Diagnóstico (C2, 16)", 
+    "II. Blindaje (C6-C9, 17)", 
+    "III. Forense (C15, 20, 21)", 
+    "IV. Oráculo (C3, 5, 12, 18)", 
+    "V. Despacho (C4, 14)"
 ])
 
-# TAB 1: RADAR Y SUPERVIVENCIA
-with tab1:
+# --- TAB I: INTELIGENCIA PREDICTIVA ---
+with tabs[0]:
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Capa 2: Diagnóstico Heptagonal")
-        df_rad = pd.DataFrame({"Eje": ["Reg", "Amb", "Ope", "Soc", "Est", "Híd", "Eco"], "Val": [75, 40, 60, 45, 50, 65, 70]})
-        fig = px.line_polar(df_rad, r='Val', theta='Eje', line_close=True, color_discrete_sequence=['#D4AF37'])
-        fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', font=dict(color="white"))
-        st.plotly_chart(fig, use_container_width=True)
+        st.subheader("Radar Heptagonal (Capa 2)")
+        df_rad = pd.DataFrame({"Eje": ["Reg", "Amb", "Ope", "Soc", "Est", "Hid", "Eco"], "Val": [82, 38, 58, 44, 49, 61, 72]})
+        fig_rad = px.line_polar(df_rad, r='Val', theta='Eje', line_close=True, color_discrete_sequence=['#D4AF37'])
+        fig_rad.update_traces(fill='toself', fillcolor='rgba(212,175,55,0.1)')
+        fig_rad.update_layout(polar=dict(bgcolor='rgba(0,0,0,0)'), paper_bgcolor='rgba(0,0,0,0)', font=dict(color="white"))
+        st.plotly_chart(fig_rad, use_container_width=True)
     with col2:
-        st.subheader("Capa 16: Curva de Supervivencia")
-        x = np.linspace(0, 36, 10)
-        y = np.exp(-0.05 * x) * 100
-        fig_cox = px.line(x=x, y=y, labels={'x':'Meses', 'y':'Prob. Éxito'}, color_discrete_sequence=['#00FFFF'])
-        fig_cox.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white"))
+        st.subheader("Decaimiento Temporal (Capa 16)")
+        x = np.arange(0, 37, 1)
+        y = np.exp(-0.035 * x) * 100
+        fig_cox = go.Figure()
+        fig_cox.add_trace(go.Scatter(x=x, y=y, name='Curva Falasca', line=dict(color='#00FFFF', width=4)))
+        fig_cox.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color="white"), xaxis_title="Meses", yaxis_title="Supervivencia %")
         st.plotly_chart(fig_cox, use_container_width=True)
 
-# TAB 2: CAPAS 6-9 (BLINDAJE)
-with tab2:
-    st.subheader("Capas 6-9: Certeza Jurídica y Aliados")
-    col_a, col_b = st.columns([2, 1])
-    with col_a:
-        st.info("Mapa de Fricción Territorial y Puntos de Apoyo Activos")
-        # Simulación de mapa Huarpe
-        st.markdown("<div style='height:300px; background:#111920; border:1px dashed #D4AF37; display:flex; align-items:center; justify-content:center;'>MAPA GEO-ESTRATÉGICO ACTIVO</div>", unsafe_allow_html=True)
-    with col_b:
-        st.metric("Índice Certeza Jurídica", "72%", "+5%")
-        st.write("**Nodos de Soporte (Capa 7):**")
-        st.success("✅ Aliado Local Catamarca: Activo")
-        st.success("✅ Red Territorial San Juan: Validada")
-
-# TAB 3: TRANSPARENCIA FORENSE (C15)
-with tab3:
-    st.subheader("Capa 15: Auditoría de Fuentes (Top 20)")
-    df_tga = pd.DataFrame({
-        "Fuente": ["Asamblea Pucará", "OCMAL Arg", "Boletín Oficial", "Mining Press", "CAEM Report"],
-        "Tipo": ["Fricción", "Fricción", "Regulatorio", "Social", "Económico"],
-        "Estado": ["Auditado", "Auditado", "Auditado", "Auditado", "Auditado"]
-    })
-    st.table(df_tga)
-    st.caption(f"Hash de Integridad MD5: {hashlib.md5(OWNER.encode()).hexdigest()}")
-
-# TAB 4: ORÁCULO Y WHAT-IF
-with tab4:
-    st.subheader("Capas 3, 5 y 18: Estrategia de Intervención")
-    col_w1, col_w2 = st.columns(2)
-    with col_w1:
-        st.write("**Simulador What-If (Capa 5)**")
-        ifs_val = st.slider("Ajuste de Impacto Social (IFS)", 0.0, 1.0, 0.45)
-        if ifs_val > 0.6:
-            st.warning("⚠️ SIMULACIÓN — NO FORENSE")
-    with col_w2:
-        st.write("**Propuesta Oráculo (Honorarios)**")
+# --- TAB II: BLINDAJE Y PROXIMIDAD ---
+with tabs[1]:
+    st.subheader("Mapa de Riesgo y Aliados (C6, 7, 8, 9, 17)")
+    c_map, c_risk = st.columns([2, 1])
+    with c_map:
+        # Capa 17: Riesgo por Proximidad
         st.markdown(f"""
-            <div class='report-box'>
-                <p>Retainer: $22,000 USD</p>
-                <p>Success Fee: 2.5% ROI</p>
-                <p><b>Titular: {OWNER}</b></p>
+            <div style='height:400px; border:1px solid #D4AF37; background:#111920; position:relative; display:flex; align-items:center; justify-content:center;'>
+                <div style='text-align:center;'>
+                    <p style='color:#D4AF37; font-family:monospace;'>[ CAPA 17: MAPA DE PROXIMIDAD ACTIVO ]</p>
+                    <p style='color:#FF3131; font-size:12px;'>● 3 Focos de Fricción detectados < 50km</p>
+                    <p style='color:#00FFFF; font-size:12px;'>★ 2 Nodos de Apoyo (C7) en radio operativo</p>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    with c_risk:
+        st.metric("Certeza Jurídica (C8)", "74%", "+2.1%")
+        st.metric("ICR Regional (C12)", "0.68", "-0.05")
+        st.write("**Protocolo Capa 9:**")
+        st.warning("⚠️ Mitigación Hídrica Nivel 2 requerida.")
+
+# --- TAB III: INTEGRIDAD FORENSE ---
+with tabs[2]:
+    st.subheader("Capa 21: Sello de Integridad Forense")
+    st.markdown(f"""
+        <div class='forense-card'>
+            <code>HASH_SESSION: {hashlib.sha256(str(np.random.random()).encode()).hexdigest()}</code><br>
+            <code>OPERADOR: {OWNER}</code><br>
+            <code>STATUS: TGA_CERTIFIED (C15)</code>
+        </div>
+    """, unsafe_allow_html=True)
+    st.write("---")
+    st.write("**Evidencia TGA (Top 20 URLs):**")
+    st.caption("1. https://asambleapucara.org/conflictos-litio (Fricción Territorial)")
+    st.caption("2. https://boletin.catamarca.gob.ar (Regulatorio)")
+    st.caption("3. https://ocmal.org/argentina (Conflictos Socioambientales)")
+
+# --- TAB IV: ORÁCULO Y WHAT-IF ---
+with tabs[3]:
+    st.subheader("Capas 3, 5 y 18: Estrategia y Pricing")
+    cw1, cw2 = st.columns(2)
+    with cw1:
+        st.write("**Simulador What-If (Capa 5)**")
+        val = st.slider("Modificar Factor de Riesgo Social", 0.0, 1.0, 0.42)
+        if val > 0.55:
+            st.error("⚠️ SELLO CAPA 21 ROTO: MODO SIMULACIÓN")
+    with cw2:
+        st.markdown(f"""
+            <div class='forense-card'>
+                <p style='color:#D4AF37;'><b>ESTRATEGIA ORÁCULO</b></p>
+                <p>Retainer: $22,500 USD</p>
+                <p>Éxito: 2.0% EBITDA Proyectado</p>
+                <p><small>Marca: {OWNER}</small></p>
             </div>
         """, unsafe_allow_html=True)
 
-# TAB 5: DESPACHO Y PERSEO (CAPAS 4 Y 14)
-with tab5:
-    st.subheader("Capas 4 y 14: Despacho Forense")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("### Protocolo Perseo")
-        if st.button("🛡️ Activar Modo Cliente (Sanitizar)"):
-            st.toast("Capa 14: Limpiando datos sensibles...")
-            st.session_state.is_sanitized = True
-        
-        if st.session_state.get('is_sanitized'):
-            st.info("ESTADO: Datos Sanitizados para Terceros")
-        
-    with c2:
-        st.markdown("### Entrega de Artefactos")
-        st.download_button(
-            label="📄 Descargar Propuesta (PDF)",
-            data=f"Reporte generado por {OWNER}",
-            file_name=f"Propuesta_{OWNER.replace(' ', '_')}.pdf",
-            mime="text/plain"
-        )
-        if st.button("🔑 Generar Director's Brief"):
-            st.markdown(f"""
-                <div style='background:#D4AF37; color:#080c10; padding:15px;'>
-                    <b>BRIEF PARA {OWNER.upper()}</b><br>
-                    Alerta: Riesgo hídrico detectado en Capa 15. ROI proyectado: 18.4%.
-                </div>
-            """, unsafe_allow_html=True)
+# --- TAB V: DESPACHO ---
+with tabs[4]:
+    st.subheader("Despacho de Artefactos (C4, 14)")
+    cd1, cd2 = st.columns(2)
+    with cd1:
+        st.markdown("**Ventana de Perseo (C14)**")
+        if st.button("🛡️ Sanitizar para Cliente"):
+            st.toast("Protocolo Perseo activado.")
+            st.session_state.sanitized = True
+        if st.session_state.get('sanitized'):
+            st.success("Modo Cliente: Identidad de activos protegida.")
+    with cd2:
+        st.markdown("**Entrega (C4)**")
+        st.download_button("Descargar Propuesta Comercial (PDF)", data="PDF_DATA", file_name="Propuesta_Falasca.pdf")
+        if st.button("🔑 Director's Brief"):
+            st.markdown(f"<div style='background:#D4AF37; color:#080c10; padding:10px; font-weight:bold;'>ROI Proyectado: 22.4% | Alerta Aliados: Catamarca Ready</div>", unsafe_allow_html=True)
 
 st.write("---")
-st.caption(f"Terminal Soberana operada exclusivamente por {OWNER} | {VERSION}")
+st.caption(f"Terminal Soberana {VERSION} | {OWNER}")
