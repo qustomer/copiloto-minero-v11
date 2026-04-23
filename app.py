@@ -1,178 +1,170 @@
-# =========================================================
-# COPILOTO MINERO — HEPTÁGONO v12.6 FINAL
-# Claudio Falasca Consultor
-# Deploy Ready para Streamlit Cloud
-# =========================================================
-
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import hashlib, json
+import hashlib, json, io
+from datetime import datetime
 from duckduckgo_search import DDGS
 from fpdf import FPDF
 
 # =========================================================
-# CONFIGURACIÓN GLOBAL
+# CONFIG INICIAL
 # =========================================================
-st.set_page_config(page_title="Copiloto Minero", layout="wide")
+st.set_page_config(page_title="HEPTAGONO Copiloto Minero", layout="wide")
 
-st.markdown("""
-<style>
-.stApp {background-color:#0a0e14;color:white}
-.stMetric {border:1px solid #D4AF37;padding:10px;border-radius:8px;background:#161b22}
-</style>
-""", unsafe_allow_html=True)
+ID_CONSULTOR = "Claudio Falasca Consultor"
 
-# =========================================================
-# SESSION STATE (CLAVE PARA QUE NO SE ROMPA EL DASHBOARD)
-# =========================================================
-if "analisis_ejecutado" not in st.session_state:
-    st.session_state.analisis_ejecutado = False
-    st.session_state.payload = None
-    st.session_state.firma = None
+# Persistencia real
+if "historial" not in st.session_state:
+    st.session_state.historial = []
+if "pipeline_activo" not in st.session_state:
+    st.session_state.pipeline_activo = None
 
 # =========================================================
-# BASE DE PROYECTOS (DATOS REALES DE EJEMPLO)
+# ARQUITECTURA 7 EJES / 21 CAPAS
 # =========================================================
-CARTERA = {
-    "Josemaría": {"roi":22,"icr_base":45,"opex":150,"prov":"San Juan"},
-    "Veladero": {"roi":18,"icr_base":30,"opex":200,"prov":"San Juan"},
-    "Peñas Negras": {"roi":35,"icr_base":85,"opex":90,"prov":"Catamarca"},
-    "Taca Taca": {"roi":28,"icr_base":50,"opex":180,"prov":"Salta"},
-    "Huarpe SRL": {"roi":15,"icr_base":15,"opex":50,"prov":"Multi"}
+EJES = {
+    "Político-Institucional": ["Marco Regulatorio","Estabilidad Jurídica","Permisos"],
+    "Socio-Territorial": ["Licencia Social","Conflictos Activos","Derechos Indígenas"],
+    "Económico-Financiero": ["ROI/EBITDA","Proveedores Locales","Costo Oportunidad"],
+    "Técnico-Minero": ["Geología","Infraestructura","Logística"],
+    "Ambiental-Ecosistémico": ["Biodiversidad","Glaciares","Pasivos"],
+    "Hídrico-Soberano": ["Cuencas","Estrés Hídrico","Gobernanza Agua"],
+    "Comunicacional": ["Percepción","Crisis","Stakeholders"]
 }
 
-EJES = [
-    "Político-Institucional","Socio-Territorial","Económico-Financiero",
-    "Técnico-Minero","Ambiental-Ecosistémico","Hídrico-Soberano","Comunicacional-Estratégico"
-]
-
 # =========================================================
-# MOTOR OSINT REAL
+# FUNCIONES MOTOR
 # =========================================================
-def ejecutar_osint(proyecto):
-    noticias=[]
+def osint_busqueda(query):
     try:
         with DDGS() as ddgs:
-            resultados = ddgs.text(f"conflicto mineria {proyecto}", max_results=5)
-            for r in resultados:
-                noticias.append(r["title"])
+            return list(ddgs.text(query, max_results=5))
     except:
-        noticias.append("No se pudieron obtener noticias OSINT.")
-    return noticias
+        return []
 
-# =========================================================
-# GENERADOR PDF REAL (C22)
-# =========================================================
-class PDF(FPDF):
-    def header(self):
-        self.set_font("Arial","B",12)
-        self.cell(0,10,"Claudio Falasca Consultor — Executive Summary",0,1,"C")
+def hash_forense(payload):
+    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
-def generar_pdf(payload,firma):
-    pdf=PDF()
+def generar_pdf(payload, hash_val):
+    pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial",size=11)
-    pdf.multi_cell(0,8,json.dumps(payload,indent=2))
-    pdf.ln(5)
-    pdf.cell(0,10,f"Firma MD5: {firma}")
-    return pdf.output(dest="S").encode("latin-1")
+    pdf.set_font("Arial","B",16)
+    pdf.cell(0,10,"Reporte C22 Heptagono",0,1)
+    pdf.set_font("Arial","",12)
+
+    pdf.cell(0,10,f"Proyecto: {payload['id']}",0,1)
+    pdf.cell(0,10,f"Provincia: {payload['provincia']}",0,1)
+    pdf.cell(0,10,f"IBH: {payload['ibh']:.2f}",0,1)
+    pdf.cell(0,10,f"ICR: {payload['icr']:.2f}",0,1)
+    pdf.multi_cell(0,10,f"Hash Forense: {hash_val}")
+
+    buffer = io.BytesIO()
+    pdf.output(buffer)
+    return buffer.getvalue()
 
 # =========================================================
-# SIDEBAR — CABINA DE CONTROL
+# SIDEBAR — CABINA CONTROL
 # =========================================================
-st.title("🏛️ Copiloto Minero — Heptágono")
-
 with st.sidebar:
-    st.header("Configuración del Caso")
+    st.title("Cabina de Control")
 
-    proyecto=st.selectbox("Proyecto", list(CARTERA.keys()))
-    roi=st.slider("ROI esperado (%)",0,60,CARTERA[proyecto]["roi"])
+    with st.form("form_pipeline"):
+        id_caso = st.text_input("ID Proyecto","PRJ-001")
+        provincia = st.selectbox("Provincia",["San Juan","Catamarca","Salta","Jujuy","Santa Cruz"])
+        roi_obj = st.slider("ROI Objetivo",0,80,25)
 
-    st.divider()
-    st.subheader("Auditoría de Ejes")
+        st.divider()
+        st.subheader("Activación de 21 capas")
 
-    scores={}
-    for eje in EJES:
-        scores[eje]=st.slider(eje,0,100,70)
+        scores = {}
+        for eje,capas in EJES.items():
+            with st.expander(eje):
+                for capa in capas:
+                    scores[capa] = st.slider(capa,0,100,70)
 
-    if st.button("🚀 EJECUTAR ANÁLISIS"):
-        noticias=ejecutar_osint(proyecto)
-        icr=100-scores["Socio-Territorial"]
-
-        # Guardia ética MLC
-        if icr>70 and roi>30:
-            st.error("🚫 BLOQUEO MLC — Riesgo reputacional alto")
-            st.stop()
-
-        avg=sum(scores.values())/7
-        impacto_ebitda=(icr/100)*CARTERA[proyecto]["opex"]*0.2
-        roi_ajustado=roi*(avg/100)
-
-        payload={
-            "proyecto":proyecto,
-            "scores":scores,
-            "icr":icr,
-            "roi_original":roi,
-            "roi_ajustado":roi_ajustado,
-            "impacto_ebitda_musd":impacto_ebitda,
-            "alertas_osint":noticias
-        }
-
-        firma=hashlib.md5(json.dumps(payload,sort_keys=True).encode()).hexdigest()
-
-        st.session_state.analisis_ejecutado=True
-        st.session_state.payload=payload
-        st.session_state.firma=firma
+        ejecutar = st.form_submit_button("Ejecutar Pipeline")
 
 # =========================================================
-# EVITA DASHBOARD VACÍO
+# EJECUCIÓN DEL PIPELINE
 # =========================================================
-if not st.session_state.analisis_ejecutado:
-    st.info("Configure el caso en la barra lateral y presione EJECUTAR ANÁLISIS.")
-    st.stop()
+if ejecutar:
 
-payload=st.session_state.payload
-firma=st.session_state.firma
-scores=payload["scores"]
+    # OSINT REAL
+    noticias = osint_busqueda(f"mineria conflicto {provincia}")
+
+    # PROMEDIOS POR EJE
+    prom_ejes = {eje: sum(scores[c] for c in capas)/3 for eje,capas in EJES.items()}
+    ibh = sum(scores.values())/21
+
+    # ICR OFICIAL (mandato)
+    icr = 100 - prom_ejes["Socio-Territorial"]
+
+    # FRICTION INDEX
+    friction = (100-prom_ejes["Socio-Territorial"] + 100-prom_ejes["Comunicacional"])/2
+
+    # GUARDIA MLC REAL
+    if scores["Licencia Social"] < 30 or scores["Conflictos Activos"] < 30 or scores["Gobernanza Agua"] < 30:
+        st.error("BLOQUEO ETICO MLC ACTIVADO")
+        st.stop()
+
+    payload = {
+        "id":id_caso,
+        "provincia":provincia,
+        "roi_obj":roi_obj,
+        "scores":scores,
+        "promedios":prom_ejes,
+        "ibh":ibh,
+        "icr":icr,
+        "friction":friction,
+        "osint":noticias
+    }
+
+    hash_val = hash_forense(payload)
+
+    st.session_state.pipeline_activo = payload
+    st.session_state.historial.append({
+        "id":id_caso,
+        "fecha":datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "ibh":round(ibh,2),
+        "hash":hash_val[:12]
+    })
 
 # =========================================================
 # DASHBOARD PRINCIPAL
 # =========================================================
-col1,col2=st.columns([2,1])
+if st.session_state.pipeline_activo:
 
-# Radar Heptágono
-with col1:
-    st.subheader("Radar Estratégico")
-    fig=go.Figure(go.Scatterpolar(
-        r=list(scores.values()),
-        theta=list(scores.keys()),
-        fill="toself",
-        line_color="#D4AF37"
+    p = st.session_state.pipeline_activo
+    hash_val = hash_forense(p)
+
+    st.title("Centro de Operaciones Heptagono")
+
+    c1,c2,c3,c4 = st.columns(4)
+    c1.metric("IBH",f"{p['ibh']:.1f}")
+    c2.metric("ICR",f"{p['icr']:.1f}%")
+    c3.metric("Friction",f"{p['friction']:.1f}")
+    c4.metric("ROI Ajustado",f"{p['roi_obj']*(p['ibh']/100):.1f}%")
+
+    # RADAR
+    fig = go.Figure(go.Scatterpolar(
+        r=list(p["promedios"].values()),
+        theta=list(p["promedios"].keys()),
+        fill='toself'
     ))
-    fig.update_layout(polar=dict(radialaxis=dict(visible=True,range=[0,100])))
     st.plotly_chart(fig,use_container_width=True)
 
-# Métricas ejecutivas
-with col2:
-    st.subheader("Indicadores Clave")
-    st.metric("ICR",f"{payload['icr']}%")
-    st.metric("ROI Ajustado",f"{payload['roi_ajustado']:.1f}%")
-    st.metric("Impacto EBITDA",f"USD {payload['impacto_ebitda_musd']:.1f} M")
+    # OSINT
+    st.subheader("Alertas OSINT")
+    for n in p["osint"]:
+        st.write(f"• {n['title']}")
 
-# Tabla de auditoría
-st.subheader("Tabla de Auditoría de Ejes")
-df=pd.DataFrame({"Eje":scores.keys(),"Score":scores.values()})
-st.table(df)
+    # HISTORIAL
+    st.subheader("Historial Auditorías")
+    st.dataframe(pd.DataFrame(st.session_state.historial))
 
-# Alertas OSINT
-st.subheader("Alertas OSINT")
-for n in payload["alertas_osint"]:
-    st.warning(n)
+    # PDF REAL
+    pdf_bytes = generar_pdf(p,hash_val)
+    st.download_button("Descargar Reporte PDF",pdf_bytes,"reporte.pdf")
 
-# PDF descargable
-if st.button("📄 Generar PDF Ejecutivo"):
-    pdf_bytes=generar_pdf(payload,firma)
-    st.download_button("Descargar Reporte",pdf_bytes,file_name="reporte_heptagono.pdf")
-
-st.caption(f"Sello Forense MD5: {firma}")
+else:
+    st.info("Configure el caso y ejecute el pipeline")
