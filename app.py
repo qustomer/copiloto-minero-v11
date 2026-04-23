@@ -87,4 +87,80 @@ with tabs[4]:
     st.button("Generar Reporte Midnight Gold")
 
 st.write("---")
-st.caption(f"Terminal Soberana {VERSION} | Propiedad de {OWNER}")
+st.caption(f"Terminal Soberana {VERSION} | Propiedad de {OWNER}")# ==============================================================================
+# UI COPILOTO — CABINA DE CONTROL
+# ==============================================================================
+
+st.set_page_config(page_title="Copiloto Heptágono v11.5", layout="wide")
+
+st.title("🧭 Copiloto Estratégico Minero — Heptágono v11.5")
+
+st.sidebar.header("Datos del Proyecto")
+
+proyecto = st.sidebar.text_input("Nombre del Proyecto", "Proyecto Demo")
+territorio = st.sidebar.text_input("Territorio", "Argentina")
+roi = st.sidebar.slider("ROI esperado (%)", 0, 80, 25)
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("Scores base de ejes")
+
+scores = {}
+for eje in EJES_OFICIALES:
+    scores[eje] = st.sidebar.slider(eje, 0, 100, 70)
+
+st.sidebar.markdown("---")
+ejecutar = st.sidebar.button("🚀 Ejecutar análisis")
+
+# ==============================================================================
+# EJECUCIÓN DEL PIPELINE
+# ==============================================================================
+
+if ejecutar:
+
+    payload = ejecutar_pipeline_certificado(
+        proyecto,
+        territorio,
+        scores,
+        roi
+    )
+
+    render_dashboard(payload)
+
+    # ==============================
+    # MÉTRICAS
+    # ==============================
+    col1, col2, col3 = st.columns(3)
+    col1.metric("ROI", f"{payload['indicadores']['roi']} %")
+    col2.metric("ICR", f"{payload['indicadores']['icr']:.2f}")
+    col3.metric("MLC", payload["seguridad"]["mlc_status"])
+
+    # ==============================
+    # TABLA DE SCORES
+    # ==============================
+    st.subheader("Scores por eje")
+    df = pd.DataFrame.from_dict(
+        payload["indicadores"]["scores"],
+        orient="index",
+        columns=["Score"]
+    )
+    st.dataframe(df)
+
+    # ==============================
+    # RADAR HEPTÁGONO
+    # ==============================
+    import plotly.graph_objects as go
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=list(payload["indicadores"]["scores"].values()),
+        theta=list(payload["indicadores"]["scores"].keys()),
+        fill='toself'
+    ))
+
+    fig.update_layout(
+        polar=dict(radialaxis=dict(visible=True, range=[0,100])),
+        showlegend=False,
+        title="Radar Estratégico Heptágono"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
