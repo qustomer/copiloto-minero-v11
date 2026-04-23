@@ -2,7 +2,18 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
-
+# ==============================================================================
+# CONSTANTES DEL SISTEMA HEPTÁGONO
+# ==============================================================================
+EJES_OFICIALES = [
+    "Político",
+    "Socio-Territorial",
+    "Económico",
+    "Técnico",
+    "Ambiental",
+    "Hídrico",
+    "Comunicacional"
+]
 # --- 1. IDENTIDAD Y GOBERNANZA (Sello de Autoridad) ---
 OWNER = "Claudio Falasca Consultor"
 VERSION = "v11.4.2 Master Core (Robust-Link)"
