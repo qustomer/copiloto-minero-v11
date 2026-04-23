@@ -1,170 +1,177 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import hashlib, json, io
+import hashlib
+import json
 from datetime import datetime
-from duckduckgo_search import DDGS
 from fpdf import FPDF
+from duckduckgo_search import DDGS
 
 # =========================================================
-# CONFIG INICIAL
+# ESTADO PERSISTENTE
 # =========================================================
-st.set_page_config(page_title="HEPTAGONO Copiloto Minero", layout="wide")
+if 'historial_casos' not in st.session_state:
+    st.session_state.historial_casos = []
 
-ID_CONSULTOR = "Claudio Falasca Consultor"
-
-# Persistencia real
-if "historial" not in st.session_state:
-    st.session_state.historial = []
-if "pipeline_activo" not in st.session_state:
+if 'pipeline_activo' not in st.session_state:
     st.session_state.pipeline_activo = None
 
 # =========================================================
-# ARQUITECTURA 7 EJES / 21 CAPAS
+# IDENTIDAD
 # =========================================================
-EJES = {
+ID_SOBERANA = "Claudio Falasca Consultor"
+SISTEMA = "HEPTÁGONO Copiloto Minero v14.1"
+
+# 7 EJES / 21 CAPAS
+EJES_CAPAS = {
     "Político-Institucional": ["Marco Regulatorio","Estabilidad Jurídica","Permisos"],
     "Socio-Territorial": ["Licencia Social","Conflictos Activos","Derechos Indígenas"],
     "Económico-Financiero": ["ROI/EBITDA","Proveedores Locales","Costo Oportunidad"],
     "Técnico-Minero": ["Geología","Infraestructura","Logística"],
     "Ambiental-Ecosistémico": ["Biodiversidad","Glaciares","Pasivos"],
-    "Hídrico-Soberano": ["Cuencas","Estrés Hídrico","Gobernanza Agua"],
+    "Hídrico-Soberano": ["Cuencas","Estrés Hídrico","Derecho Agua"],
     "Comunicacional": ["Percepción","Crisis","Stakeholders"]
 }
 
+st.set_page_config(page_title=SISTEMA, layout="wide")
+
 # =========================================================
-# FUNCIONES MOTOR
+# CSS WAR ROOM
 # =========================================================
-def osint_busqueda(query):
+st.markdown("""
+<style>
+.stApp { background:#080c10; color:#e0e0e0; }
+.stMetric { background:#0d1318; border:1px solid #c8a84b; padding:10px; border-radius:6px; }
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================================
+# MOTORES BACKEND
+# =========================================================
+def motor_osint(query):
     try:
         with DDGS() as ddgs:
-            return list(ddgs.text(query, max_results=5))
+            return list(ddgs.text(query, max_results=4))
     except:
         return []
 
-def hash_forense(payload):
+def generar_hash(payload):
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
+# ⭐⭐⭐ FUNCIÓN PDF CORREGIDA STREAMLIT ⭐⭐⭐
 def generar_pdf(payload, hash_val):
     pdf = FPDF()
     pdf.add_page()
+
     pdf.set_font("Arial","B",16)
     pdf.cell(0,10,"Reporte C22 Heptagono",0,1)
-    pdf.set_font("Arial","",12)
 
+    pdf.set_font("Arial","",12)
     pdf.cell(0,10,f"Proyecto: {payload['id']}",0,1)
     pdf.cell(0,10,f"Provincia: {payload['provincia']}",0,1)
     pdf.cell(0,10,f"IBH: {payload['ibh']:.2f}",0,1)
     pdf.cell(0,10,f"ICR: {payload['icr']:.2f}",0,1)
+    pdf.cell(0,10,f"Friction Index: {payload['friction']:.2f}",0,1)
     pdf.multi_cell(0,10,f"Hash Forense: {hash_val}")
 
-    buffer = io.BytesIO()
-    pdf.output(buffer)
-    return buffer.getvalue()
+    # FIX STREAMLIT CLOUD
+    pdf_bytes = pdf.output(dest="S").encode("latin-1")
+    return pdf_bytes
 
 # =========================================================
 # SIDEBAR — CABINA CONTROL
 # =========================================================
 with st.sidebar:
-    st.title("Cabina de Control")
+    st.title("🏛️ HEPTÁGONO")
+    st.subheader("Auditoría de Caso")
 
-    with st.form("form_pipeline"):
-        id_caso = st.text_input("ID Proyecto","PRJ-001")
-        provincia = st.selectbox("Provincia",["San Juan","Catamarca","Salta","Jujuy","Santa Cruz"])
-        roi_obj = st.slider("ROI Objetivo",0,80,25)
+    with st.form("form"):
+        id_caso = st.text_input("ID Proyecto", "PRJ-2026-X")
+        provincia = st.selectbox("Provincia", ["San Juan","Catamarca","Salta","Jujuy","Santa Cruz"])
+        roi_target = st.slider("ROI objetivo (%)", 0, 80, 25)
 
         st.divider()
-        st.subheader("Activación de 21 capas")
+        st.write("⚙️ Activación 21 capas")
 
-        scores = {}
-        for eje,capas in EJES.items():
-            with st.expander(eje):
-                for capa in capas:
-                    scores[capa] = st.slider(capa,0,100,70)
+        scores_temp = {}
+        for eje, capas in EJES_CAPAS.items():
+            for capa in capas:
+                scores_temp[capa] = st.slider(capa,0,100,70)
 
-        ejecutar = st.form_submit_button("Ejecutar Pipeline")
+        ejecutar = st.form_submit_button("🚀 EJECUTAR PIPELINE")
 
 # =========================================================
-# EJECUCIÓN DEL PIPELINE
+# PIPELINE EJECUCIÓN
 # =========================================================
 if ejecutar:
 
-    # OSINT REAL
-    noticias = osint_busqueda(f"mineria conflicto {provincia}")
+    noticias = motor_osint(f"conflicto mineria {id_caso} {provincia}")
 
-    # PROMEDIOS POR EJE
-    prom_ejes = {eje: sum(scores[c] for c in capas)/3 for eje,capas in EJES.items()}
-    ibh = sum(scores.values())/21
+    icr = 100 - (sum([scores_temp[c] for c in EJES_CAPAS["Socio-Territorial"]]) / 3)
+    ibh = sum(scores_temp.values()) / 21
+    friction = icr * 0.6 + (100-ibh) * 0.4
 
-    # ICR OFICIAL (mandato)
-    icr = 100 - prom_ejes["Socio-Territorial"]
-
-    # FRICTION INDEX
-    friction = (100-prom_ejes["Socio-Territorial"] + 100-prom_ejes["Comunicacional"])/2
-
-    # GUARDIA MLC REAL
-    if scores["Licencia Social"] < 30 or scores["Conflictos Activos"] < 30 or scores["Gobernanza Agua"] < 30:
-        st.error("BLOQUEO ETICO MLC ACTIVADO")
+    # GUARDIA MLC
+    if icr > 70 and roi_target > 30:
+        st.error("🚫 BLOQUEO ÉTICO MLC")
         st.stop()
 
     payload = {
-        "id":id_caso,
-        "provincia":provincia,
-        "roi_obj":roi_obj,
-        "scores":scores,
-        "promedios":prom_ejes,
-        "ibh":ibh,
-        "icr":icr,
-        "friction":friction,
-        "osint":noticias
+        "id": id_caso,
+        "provincia": provincia,
+        "roi": roi_target,
+        "scores": scores_temp,
+        "icr": icr,
+        "ibh": ibh,
+        "friction": friction,
+        "osint_hits": len(noticias)
     }
 
-    hash_val = hash_forense(payload)
+    hash_val = generar_hash(payload)
 
     st.session_state.pipeline_activo = payload
-    st.session_state.historial.append({
-        "id":id_caso,
-        "fecha":datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "ibh":round(ibh,2),
-        "hash":hash_val[:12]
-    })
+    st.session_state.historial_casos.append({"id":id_caso,"hash":hash_val,"ibh":ibh})
 
 # =========================================================
-# DASHBOARD PRINCIPAL
+# DASHBOARD
 # =========================================================
 if st.session_state.pipeline_activo:
 
     p = st.session_state.pipeline_activo
-    hash_val = hash_forense(p)
+    hash_val = generar_hash(p)
 
-    st.title("Centro de Operaciones Heptagono")
+    st.title("Centro de Mando Heptágono")
 
     c1,c2,c3,c4 = st.columns(4)
-    c1.metric("IBH",f"{p['ibh']:.1f}")
-    c2.metric("ICR",f"{p['icr']:.1f}%")
-    c3.metric("Friction",f"{p['friction']:.1f}")
-    c4.metric("ROI Ajustado",f"{p['roi_obj']*(p['ibh']/100):.1f}%")
+    c1.metric("IBH", f"{p['ibh']:.1f}")
+    c2.metric("ICR", f"{p['icr']:.1f}%")
+    c3.metric("Friction Index", f"{p['friction']:.1f}")
+    c4.metric("ROI Ajustado", f"{p['roi']*(p['ibh']/100):.1f}%")
 
-    # RADAR
+    # Radar por eje
+    promedios_eje = {eje: sum([p['scores'][c] for c in capas])/3 for eje, capas in EJES_CAPAS.items()}
+
     fig = go.Figure(go.Scatterpolar(
-        r=list(p["promedios"].values()),
-        theta=list(p["promedios"].keys()),
+        r=list(promedios_eje.values()),
+        theta=list(promedios_eje.keys()),
         fill='toself'
     ))
-    st.plotly_chart(fig,use_container_width=True)
+    fig.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0,100])))
+    st.plotly_chart(fig, use_container_width=True)
 
-    # OSINT
+    # OSINT REAL
     st.subheader("Alertas OSINT")
-    for n in p["osint"]:
-        st.write(f"• {n['title']}")
+    noticias = motor_osint(f"conflicto mineria {p['id']} {p['provincia']}")
+    for n in noticias:
+        st.write("•", n["title"])
 
     # HISTORIAL
     st.subheader("Historial Auditorías")
-    st.dataframe(pd.DataFrame(st.session_state.historial))
+    st.table(pd.DataFrame(st.session_state.historial_casos).tail(5))
 
     # PDF REAL
-    pdf_bytes = generar_pdf(p,hash_val)
-    st.download_button("Descargar Reporte PDF",pdf_bytes,"reporte.pdf")
+    pdf_bytes = generar_pdf(p, hash_val)
+    st.download_button("📄 Descargar Reporte PDF", pdf_bytes, "reporte_heptagono.pdf")
 
 else:
-    st.info("Configure el caso y ejecute el pipeline")
+    st.info("Configure el caso y ejecute el pipeline desde la barra lateral.")
